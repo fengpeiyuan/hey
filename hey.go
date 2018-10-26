@@ -56,6 +56,11 @@ var (
 	t = flag.Int("t", 20, "")
 	z = flag.Duration("z", 0, "")
 
+  isdynamicurl = flag.Bool("is-dynamic-url", false, "")
+  dynamicurlfrom = flag.Int64("dynamic-url-from",0,"") 
+  dynamicurlto = flag.Int64("dynamic-url-to",0,"") 
+  dynamicurlprefix = flag.String("dynamic-url-prefix","","") 
+
 	h2   = flag.Bool("h2", false, "")
 	cpus = flag.Int("cpus", runtime.GOMAXPROCS(-1), "")
 
@@ -99,6 +104,11 @@ Options:
   -disable-redirects    Disable following of HTTP redirects
   -cpus                 Number of used cpu cores.
                         (default for current machine is %d cores)
+
+  -is-dynamic-url       Enable modify url, dynamic request, base-url + dynamic-url-prefix + dynamic-url(from -dynamic-url-from to -dynamic-url-to)
+  -dynamic-url-from
+  -dynamic-url-to
+  -dynamic-url-prefix
 `
 
 func main() {
@@ -119,6 +129,10 @@ func main() {
 	conc := *c
 	q := *q
 	dur := *z
+  isDynamicUrl := *isdynamicurl
+  dynamicUrlFrom := *dynamicurlfrom
+  dynamicUrlTo := *dynamicurlto
+  dynamicUrlPrefix := *dynamicurlprefix
 
 	if dur > 0 {
 		num = math.MaxInt32
@@ -133,6 +147,10 @@ func main() {
 		if num < conc {
 			usageAndExit("-n cannot be less than -c.")
 		}
+
+    if dynamicUrlFrom > dynamicUrlTo {
+      usageAndExit("-dynamic-url-from must <= -dynamic-url-to.")
+    }
 	}
 
 	url := flag.Args()[0]
@@ -225,6 +243,10 @@ func main() {
 		H2:                 *h2,
 		ProxyAddr:          proxyURL,
 		Output:             *output,
+    IsDynamicUrl:       isDynamicUrl,
+    DynamicUrlFrom:     dynamicUrlFrom,
+    DynamicUrlTo:       dynamicUrlTo,
+    DynamicUrlPrefix:   dynamicUrlPrefix,
 	}
 	w.Init()
 
