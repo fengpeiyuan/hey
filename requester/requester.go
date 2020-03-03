@@ -60,12 +60,12 @@ func (b *Work) Finish() {
 func (b *Work) makeRequest(cli *redis.Client, n int64) {
 	key := fmt.Sprintf("key:%012d", n)
 	//log.Printf("[makeRequest] n: %012d, key:%s", n, key)
-	v, er := cli.Do("SET", key, b.bodyBuffer.String()).Result()
+	v, er := cli.Do("GET", key).Result()
 	if er != nil {
-		log.Printf("[makeRequest] Do fail, err: %v, return:%s", er, v)
+		log.Printf("[makeRequest GET ] Do fail, err: %v, return:%s", er, v)
 	}
 	if n%10000 == 0 {
-		log.Printf("[-- makeRequest --] request: %d completed.", n)
+		log.Printf("[-- makeRequest GET --] request: %d completed.", n)
 	}
 
 }
@@ -86,7 +86,7 @@ func (b *Work) runWorker(start, end int64) {
 			b.makeRequest(cli, i)
 		}
 	}
-	log.Printf("[runWorker] completed request from:%d, to:%d", start, end)
+	log.Printf("[runWorker] completed GET request from:%d, to:%d", start, end)
 }
 
 func (b *Work) runWorkers() {
@@ -95,7 +95,7 @@ func (b *Work) runWorkers() {
 	sum := b.DynamicTo - b.DynamicFrom
 	step := sum / int64(b.C)
 	stepSum := b.DynamicFrom
-	log.Printf("[runWorkers] sum: %d, concurrent:%d, step:%d,stepSum:%d", sum, b.C, step, stepSum)
+	log.Printf("[runWorkers] GET sum: %d, concurrent:%d, step:%d,stepSum:%d", sum, b.C, step, stepSum)
 	for i := 0; i < b.C; i++ {
 		go func(start, end int64) {
 			b.runWorker(start, end)
